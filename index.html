@@ -1,0 +1,54 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>nichijou?</title>
+<meta name="author" content="KEY">
+<meta name="keywords" content="日常？">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<link href="//dn-assets-cdn.qbox.me/favicon.ico" rel="shortcut icon">
+<link rel="icon" type="image/png" href="//dn-assets-cdn.qbox.me/favicon_128dp.png" sizes="128x128" />
+<!-- Javascript -->
+<!--[if lt IE 9]>
+<script src="//dn-assets-cdn.qbox.me/html5shiv/html5shiv.min.js?v=3.7.2"></script>
+<![endif]-->
+<style>html,body{height:100%;width:100%}body{display:table;margin:0;font:13px/1.65 "Segoe UI","Helvetica Neue",Helvetica,Arial,"Hiragino Kaku Gothic Pro","Meiryo","Hiragino Sans GB","Microsoft YaHei","STHeiti","SimSun",Sans-serif}a{color:#777;text-decoration:none}a:hover{color:#15C}section,footer{display:table-row}section{height:95%}footer{height:5%}span{display:table-cell;text-align:center;vertical-align:middle}</style>
+</head>
+<body>
+<section>
+<span id="hitokoto"></span>
+</section>
+
+<footer>
+<span>@ <a href="Blog/index.html" rel="author">不知道什么星球的二周目</a>-晴天</span>
+</footer>
+<script>
+var hitokotos = [
+'不愉快です',
+'男が変态で何が悪い',
+'只会发光的料理简直弱爆了',
+'LET JUSTICE BE DONE, THOUGH THE HEAVENS FALL.',
+'やはり俺の青春ラブコメはまちがっている',
+'このあと滅茶苦茶セックスした',
+'わたし、気になります！',
+'面码，我宣你，你造吗！',
+'东山大法好！',
+'去你妈的战术操作，老子平A就行',
+'区区一个亚麻大→_→',
+'诸君，拔剑吧！',
+'胸不平何以平天下，乳不巨何以聚人心？！'
+];
+var hitokoto = document.getElementById('hitokoto');
+var text = hitokotos[Math.floor(Math.random() * hitokotos.length)];
+var byteLength = function (val) {
+var len = 0;
+for (var i = 0; i < val.length; i++)
+(val[i].match(/[^\x00-\xff]/ig) != null) ? len += 2 : len += 1;
+return len;
+}
+hitokoto.style.fontSize = 10 - Math.ceil(byteLength(text) / ((window.screen.width <= 1280) ? 7 : 10)) + 'em';
+hitokoto.innerText = "「" + text + "」"; 
+</script>
+</body>
+</html>
