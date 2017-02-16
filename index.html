@@ -3,11 +3,11 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>nichijou?</title>
+<title></title>
 <meta name="author" content="KEY">
 <meta name="keywords" content="日常？">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-<link href="//dn-assets-cdn.qbox.me/favicon.ico" rel="shortcut icon">
+<link href="avatar.gif" rel="shortcut icon">
 <link rel="icon" type="image/png" href="//dn-assets-cdn.qbox.me/favicon_128dp.png" sizes="128x128" />
 <!-- Javascript -->
 <!--[if lt IE 9]>
@@ -24,6 +24,12 @@
 <span>@ <a href="Blog/index.html" rel="author">不知道什么星球的二周目</a>-晴天</span>
 </footer>
 <script>
+var titles=[
+'袄哈有',
+'空帮哇',
+'害！依——挨！',
+'袄依洗衣'
+];
 var hitokotos = [
 '不愉快です',
 '男が変态で何が悪い',
@@ -32,13 +38,14 @@ var hitokotos = [
 'やはり俺の青春ラブコメはまちがっている',
 'このあと滅茶苦茶セックスした',
 'わたし、気になります！',
-'面码，我宣你，你造吗！',
-'东山大法好！',
-'去你妈的战术操作，老子平A就行',
-'区区一个亚麻大→_→',
 '诸君，拔剑吧！',
-'胸不平何以平天下，乳不巨何以聚人心？！'
+'胸不平何以平天下，乳不巨何以聚人心？！',
+'同样的招式对圣斗士是不管用的<(￣ˇ￣)/',
+'爱生活る爱loliる更爱御姐(｢･ω･)｢嘿',
+'私の靑春は犬に食べさせました'
 ];
+
+var title_text = titles[Math.floor(Math.random() * titles.length)];
 var hitokoto = document.getElementById('hitokoto');
 var text = hitokotos[Math.floor(Math.random() * hitokotos.length)];
 var byteLength = function (val) {
@@ -47,8 +54,9 @@ for (var i = 0; i < val.length; i++)
 (val[i].match(/[^\x00-\xff]/ig) != null) ? len += 2 : len += 1;
 return len;
 }
-hitokoto.style.fontSize = 10 - Math.ceil(byteLength(text) / ((window.screen.width <= 1280) ? 7 : 10)) + 'em';
+hitokoto.style.fontSize = 9 - Math.ceil(byteLength(text) / ((window.screen.width <= 1280) ? 7 : 10)) + 'em';
 hitokoto.innerText = "「" + text + "」"; 
+document.title = title_text;
 </script>
 </body>
 </html>
