@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>uploader（多文件上传） | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="描述： 做单文件上传时，发现重新添加后，input值不发生改变，导致不知道是否成功了，尤其是文件很小的时候，进度条基本看不出来； 查看源代码，发现dmuploader为多文件上传，所以会将文件名置“”也无可厚非； 修改源代码之后，可现实当前文件名称； 既然是多文件上传的源代码，索性加工一下，实现了一个多文件上传的工具   效果截图： js文件   123456789101112131415161">
+<meta name="keywords" content="web, tools">
+<meta property="og:type" content="article">
+<meta property="og:title" content="uploader（多文件上传）">
+<meta property="og:url" content="http://yoursite.com/2017/08/14/uploader/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="描述： 做单文件上传时，发现重新添加后，input值不发生改变，导致不知道是否成功了，尤其是文件很小的时候，进度条基本看不出来； 查看源代码，发现dmuploader为多文件上传，所以会将文件名置“”也无可厚非； 修改源代码之后，可现实当前文件名称； 既然是多文件上传的源代码，索性加工一下，实现了一个多文件上传的工具   效果截图： js文件   123456789101112131415161">
+<meta property="og:updated_time" content="2017-09-03T14:36:47.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="uploader（多文件上传）">
+<meta name="twitter:description" content="描述： 做单文件上传时，发现重新添加后，input值不发生改变，导致不知道是否成功了，尤其是文件很小的时候，进度条基本看不出来； 查看源代码，发现dmuploader为多文件上传，所以会将文件名置“”也无可厚非； 修改源代码之后，可现实当前文件名称； 既然是多文件上传的源代码，索性加工一下，实现了一个多文件上传的工具   效果截图： js文件   123456789101112131415161">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-uploader" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/08/14/uploader/" class="article-date">
+  <time datetime="2017-08-13T16:00:00.000Z" itemprop="datePublished">2017-08-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      uploader（多文件上传）
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <ul>
+<li>描述：<ul>
+<li>做单文件上传时，发现重新添加后，input值不发生改变，导致不知道是否成功了，尤其是文件很小的时候，进度条基本看不出来；</li>
+<li>查看源代码，发现dmuploader为多文件上传，所以会将文件名置“”也无可厚非；</li>
+<li>修改源代码之后，可现实当前文件名称；</li>
+<li>既然是多文件上传的源代码，索性加工一下，实现了一个多文件上传的工具</li>
+</ul>
+</li>
+<li>效果截图：</li>
+<li><p>js文件</p>
+  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div><div class="line">225</div><div class="line">226</div><div class="line">227</div><div class="line">228</div><div class="line">229</div><div class="line">230</div><div class="line">231</div><div class="line">232</div><div class="line">233</div><div class="line">234</div><div class="line">235</div><div class="line">236</div><div class="line">237</div><div class="line">238</div><div class="line">239</div><div class="line">240</div><div class="line">241</div><div class="line">242</div><div class="line">243</div><div class="line">244</div><div class="line">245</div><div class="line">246</div><div class="line">247</div><div class="line">248</div><div class="line">249</div><div class="line">250</div><div class="line">251</div><div class="line">252</div><div class="line">253</div><div class="line">254</div><div class="line">255</div><div class="line">256</div><div class="line">257</div><div class="line">258</div><div class="line">259</div><div class="line">260</div><div class="line">261</div><div class="line">262</div><div class="line">263</div><div class="line">264</div><div class="line">265</div><div class="line">266</div><div class="line">267</div><div class="line">268</div><div class="line">269</div><div class="line">270</div><div class="line">271</div><div class="line">272</div><div class="line">273</div><div class="line">274</div><div class="line">275</div><div class="line">276</div><div class="line">277</div><div class="line">278</div><div class="line">279</div><div class="line">280</div><div class="line">281</div><div class="line">282</div><div class="line">283</div><div class="line">284</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment"> * 多文件上传</span></div><div class="line"><span class="comment"> * @author zhangbo[zhangbo1@huli.com]</span></div><div class="line"><span class="comment"> * @since 2017-8-15</span></div><div class="line"><span class="comment"> */</span></div><div class="line">(<span class="function"><span class="keyword">function</span>(<span class="params">$</span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> pluginName = <span class="string">'mulUploader'</span>;</div><div class="line">    <span class="comment">// These are the plugin defaults values</span></div><div class="line">    <span class="keyword">var</span> defaults = &#123;</div><div class="line">        url: <span class="built_in">document</span>.URL,</div><div class="line">        method: <span class="string">'POST'</span>,</div><div class="line">        extraData: &#123;&#125;,</div><div class="line">        maxFileSize: <span class="number">0</span>,</div><div class="line">        maxFiles: <span class="number">0</span>,</div><div class="line">        allowedTypes: <span class="string">'*'</span>,</div><div class="line">        extFilter: <span class="literal">null</span>,</div><div class="line">        dataType: <span class="literal">null</span>,</div><div class="line">        fileName: <span class="string">'file'</span>,</div><div class="line">        onInit: <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;&#125;,</div><div class="line">        onFallbackMode: <span class="function"><span class="keyword">function</span>(<span class="params">message</span>) </span>&#123;&#125;,</div><div class="line">        onNewFile: <span class="function"><span class="keyword">function</span>(<span class="params">id, file</span>)</span>&#123;&#125;,</div><div class="line">        onBeforeUpload: <span class="function"><span class="keyword">function</span>(<span class="params">index</span>)</span>&#123;&#125;,</div><div class="line">        onComplete: <span class="function"><span class="keyword">function</span>(<span class="params">file</span>)</span>&#123;&#125;,</div><div class="line">        onUploadProgress: <span class="function"><span class="keyword">function</span>(<span class="params">index, percent</span>)</span>&#123;&#125;,</div><div class="line">        onUploadSuccess: <span class="function"><span class="keyword">function</span>(<span class="params">index, data</span>)</span>&#123;&#125;,</div><div class="line">        onUploadError: <span class="function"><span class="keyword">function</span>(<span class="params">index, message</span>)</span>&#123;&#125;,</div><div class="line">        onFileTypeError: <span class="function"><span class="keyword">function</span>(<span class="params">file</span>)</span>&#123;&#125;,</div><div class="line">        onFileSizeError: <span class="function"><span class="keyword">function</span>(<span class="params">file</span>)</span>&#123;&#125;,</div><div class="line">        onFileExtError: <span class="function"><span class="keyword">function</span>(<span class="params">file</span>)</span>&#123;&#125;,</div><div class="line">        onFilesMaxError: <span class="function"><span class="keyword">function</span>(<span class="params">file</span>)</span>&#123;&#125;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    <span class="keyword">var</span> MulUploader = <span class="function"><span class="keyword">function</span>(<span class="params">element, options</span>)</span></div><div class="line"><span class="function">    </span>&#123;</div><div class="line">        <span class="keyword">this</span>.element = $(element);</div><div class="line"></div><div class="line">        <span class="keyword">this</span>.settings = $.extend(&#123;&#125;, defaults, options);</div><div class="line"></div><div class="line">        <span class="keyword">if</span>(!<span class="keyword">this</span>.checkBrowser())&#123;</div><div class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">this</span>.init();</div><div class="line"></div><div class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    MulUploader.prototype.checkBrowser = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span></div><div class="line"><span class="function">    </span>&#123;</div><div class="line">        <span class="keyword">if</span>(<span class="built_in">window</span>.FormData === <span class="literal">undefined</span>)&#123;</div><div class="line">            <span class="keyword">this</span>.settings.onFallbackMode.call(<span class="keyword">this</span>.element, <span class="string">'Browser doesn\'t support Form API'</span>);</div><div class="line"></div><div class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">if</span>(<span class="keyword">this</span>.element.find(<span class="string">'input[type=file]'</span>).length &gt; <span class="number">0</span>)&#123;</div><div class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (!<span class="keyword">this</span>.checkEvent(<span class="string">'drop'</span>, <span class="keyword">this</span>.element) || !<span class="keyword">this</span>.checkEvent(<span class="string">'dragstart'</span>, <span class="keyword">this</span>.element))&#123;</div><div class="line">            <span class="keyword">this</span>.settings.onFallbackMode.call(<span class="keyword">this</span>.element, <span class="string">'Browser doesn\'t support Ajax Drag and Drop'</span>);</div><div class="line"></div><div class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    MulUploader.prototype.checkEvent = <span class="function"><span class="keyword">function</span>(<span class="params">eventName, element</span>)</span></div><div class="line"><span class="function">    </span>&#123;</div><div class="line">        <span class="keyword">var</span> element = element || <span class="built_in">document</span>.createElement(<span class="string">'div'</span>);</div><div class="line">        <span class="keyword">var</span> eventName = <span class="string">'on'</span> + eventName;</div><div class="line"></div><div class="line">        <span class="keyword">var</span> isSupported = eventName <span class="keyword">in</span> element;</div><div class="line"></div><div class="line">        <span class="keyword">if</span>(!isSupported)&#123;</div><div class="line">            <span class="keyword">if</span>(!element.setAttribute)&#123;</div><div class="line">                element = <span class="built_in">document</span>.createElement(<span class="string">'div'</span>);</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span>(element.setAttribute &amp;&amp; element.removeAttribute)&#123;</div><div class="line">                element.setAttribute(eventName, <span class="string">''</span>);</div><div class="line">                isSupported = <span class="keyword">typeof</span> element[eventName] == <span class="string">'function'</span>;</div><div class="line"></div><div class="line">                <span class="keyword">if</span>(<span class="keyword">typeof</span> element[eventName] != <span class="string">'undefined'</span>)&#123;</div><div class="line">                    element[eventName] = <span class="literal">undefined</span>;</div><div class="line">                &#125;</div><div class="line">                element.removeAttribute(eventName);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        element = <span class="literal">null</span>;</div><div class="line">        <span class="keyword">return</span> isSupported;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    MulUploader.prototype.init = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span></div><div class="line"><span class="function">    </span>&#123;</div><div class="line">        <span class="keyword">var</span> widget = <span class="keyword">this</span>;</div><div class="line"></div><div class="line">        widget.queue = <span class="keyword">new</span> <span class="built_in">Array</span>();</div><div class="line">        widget.queuePos = <span class="number">-1</span>;</div><div class="line">        widget.queueRunning = <span class="literal">false</span>;</div><div class="line"></div><div class="line"></div><div class="line">        <span class="comment">// -- Drag and drop event</span></div><div class="line">        widget.element.on(<span class="string">'drop'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">evt</span>)</span>&#123;</div><div class="line">            evt.preventDefault();</div><div class="line">            <span class="keyword">var</span> files = evt.originalEvent.dataTransfer.files;</div><div class="line">            widget.queueFiles(files);</div><div class="line">        &#125;);</div><div class="line"></div><div class="line"></div><div class="line">        <span class="comment">//-- Optional File input to make a clickable area</span></div><div class="line">        widget.element.find(<span class="string">'input[type=file]'</span>).on(<span class="string">'change'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">evt</span>)</span>&#123;</div><div class="line">            <span class="keyword">var</span> files = evt.target.files;</div><div class="line">            widget.queueFiles(files);</div><div class="line">        &#125;);</div><div class="line"></div><div class="line">        <span class="keyword">this</span>.settings.onInit.call(<span class="keyword">this</span>.element);</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    MulUploader.prototype.queueFiles = <span class="function"><span class="keyword">function</span>(<span class="params">files</span>)</span></div><div class="line"><span class="function">    </span>&#123;</div><div class="line">        <span class="keyword">var</span> j = <span class="keyword">this</span>.queue.length;</div><div class="line"></div><div class="line">        <span class="keyword">for</span> (<span class="keyword">var</span> i= <span class="number">0</span>; i &lt; files.length; i++)</div><div class="line">        &#123;</div><div class="line">            <span class="keyword">var</span> file = files[i];</div><div class="line"></div><div class="line">            <span class="comment">// Check file size</span></div><div class="line">            <span class="keyword">if</span>((<span class="keyword">this</span>.settings.maxFileSize &gt; <span class="number">0</span>) &amp;&amp;</div><div class="line">                (file.size &gt; <span class="keyword">this</span>.settings.maxFileSize))&#123;</div><div class="line"></div><div class="line">                <span class="keyword">this</span>.settings.onFileSizeError.call(<span class="keyword">this</span>.element, file);</div><div class="line"></div><div class="line">                <span class="keyword">continue</span>;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="comment">// Check file type</span></div><div class="line">            <span class="keyword">if</span>((<span class="keyword">this</span>.settings.allowedTypes != <span class="string">'*'</span>) &amp;&amp;</div><div class="line">                !file.type.match(<span class="keyword">this</span>.settings.allowedTypes))&#123;</div><div class="line"></div><div class="line">                <span class="keyword">this</span>.settings.onFileTypeError.call(<span class="keyword">this</span>.element, file);</div><div class="line"></div><div class="line">                <span class="keyword">continue</span>;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="comment">// Check file extension</span></div><div class="line">            <span class="keyword">if</span>(<span class="keyword">this</span>.settings.extFilter != <span class="literal">null</span>)&#123;</div><div class="line">                <span class="keyword">var</span> extList = <span class="keyword">this</span>.settings.extFilter.toLowerCase().split(<span class="string">';'</span>);</div><div class="line"></div><div class="line">                <span class="keyword">var</span> ext = file.name.toLowerCase().split(<span class="string">'.'</span>).pop();</div><div class="line"></div><div class="line">                <span class="keyword">if</span>($.inArray(ext, extList) &lt; <span class="number">0</span>)&#123;</div><div class="line">                    <span class="keyword">this</span>.settings.onFileExtError.call(<span class="keyword">this</span>.element, file);</div><div class="line"></div><div class="line">                    <span class="keyword">continue</span>;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="comment">// Check max files</span></div><div class="line">            <span class="keyword">if</span>(<span class="keyword">this</span>.settings.maxFiles &gt; <span class="number">0</span>) &#123;</div><div class="line">                <span class="keyword">if</span>(<span class="keyword">this</span>.queue.length &gt;= <span class="keyword">this</span>.settings.maxFiles) &#123;</div><div class="line">                    <span class="keyword">this</span>.settings.onFilesMaxError.call(<span class="keyword">this</span>.element, file);</div><div class="line"></div><div class="line">                    <span class="keyword">continue</span>;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="keyword">this</span>.queue.push(file);</div><div class="line"></div><div class="line">            <span class="keyword">var</span> index = <span class="keyword">this</span>.queue.length - <span class="number">1</span>;</div><div class="line"></div><div class="line">            <span class="keyword">this</span>.settings.onNewFile.call(<span class="keyword">this</span>.element, index, file);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="comment">// Only start Queue if we haven't!</span></div><div class="line">        <span class="keyword">if</span>(<span class="keyword">this</span>.queueRunning)&#123;</div><div class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="comment">// and only if new Failes were successfully added</span></div><div class="line">        <span class="keyword">if</span>(<span class="keyword">this</span>.queue.length == j)&#123;</div><div class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">this</span>.processQueue();</div><div class="line"></div><div class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    MulUploader.prototype.processQueue = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span></div><div class="line"><span class="function">    </span>&#123;</div><div class="line">        <span class="keyword">var</span> widget = <span class="keyword">this</span>;</div><div class="line"></div><div class="line">        widget.queuePos++;</div><div class="line"></div><div class="line">        <span class="keyword">if</span>(widget.queuePos &gt;= widget.queue.length)&#123;</div><div class="line">            <span class="comment">// Cleanup</span></div><div class="line"></div><div class="line">            widget.settings.onComplete.call(widget.element);</div><div class="line"></div><div class="line">            <span class="comment">// Wait until new files are droped</span></div><div class="line">            widget.queuePos = (widget.queue.length - <span class="number">1</span>);</div><div class="line"></div><div class="line">            widget.queueRunning = <span class="literal">false</span>;</div><div class="line"></div><div class="line">            <span class="keyword">return</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">var</span> file = widget.queue[widget.queuePos];</div><div class="line"></div><div class="line">        <span class="comment">// Form Data</span></div><div class="line">        <span class="keyword">var</span> fd = <span class="keyword">new</span> FormData();</div><div class="line">        fd.append(widget.settings.fileName, file);</div><div class="line"></div><div class="line">        <span class="comment">// Return from client function (default === undefined)</span></div><div class="line">        <span class="keyword">var</span> can_continue = widget.settings.onBeforeUpload.call(widget.element, widget.queuePos);</div><div class="line"></div><div class="line">        <span class="comment">// If the client function doesn't return FALSE then continue</span></div><div class="line">        <span class="keyword">if</span>( <span class="literal">false</span> === can_continue ) &#123;</div><div class="line">            <span class="keyword">return</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="comment">// Append extra Form Data</span></div><div class="line">        $.each(widget.settings.extraData, <span class="function"><span class="keyword">function</span>(<span class="params">exKey, exVal</span>)</span>&#123;</div><div class="line">            fd.append(exKey, exVal);</div><div class="line">        &#125;);</div><div class="line"></div><div class="line">        widget.queueRunning = <span class="literal">true</span>;</div><div class="line"></div><div class="line">        <span class="comment">// Ajax Submit</span></div><div class="line">        $.ajax(&#123;</div><div class="line">          url: widget.settings.url,</div><div class="line">          type: widget.settings.method,</div><div class="line">          dataType: widget.settings.dataType,</div><div class="line">          data: fd,</div><div class="line">          cache: <span class="literal">false</span>,</div><div class="line">          contentType: <span class="literal">false</span>,</div><div class="line">          processData: <span class="literal">false</span>,</div><div class="line">          forceSync: <span class="literal">false</span>,</div><div class="line">          xhr: <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">            <span class="keyword">var</span> xhrobj = $.ajaxSettings.xhr();</div><div class="line">            <span class="keyword">if</span>(xhrobj.upload)&#123;</div><div class="line">              xhrobj.upload.addEventListener(<span class="string">'progress'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</div><div class="line">                <span class="keyword">var</span> percent = <span class="number">0</span>;</div><div class="line">                <span class="keyword">var</span> position = event.loaded || event.position;</div><div class="line">                <span class="keyword">var</span> total = event.total || event.totalSize;</div><div class="line">                <span class="keyword">if</span>(event.lengthComputable)&#123;</div><div class="line">                  percent = <span class="built_in">Math</span>.ceil(position / total * <span class="number">100</span>);</div><div class="line">                &#125;</div><div class="line">        </div><div class="line">                widget.settings.onUploadProgress.call(widget.element, widget.queuePos, percent);</div><div class="line">              &#125;, <span class="literal">false</span>);</div><div class="line">            &#125;</div><div class="line">        </div><div class="line">            <span class="keyword">return</span> xhrobj;</div><div class="line">          &#125;,</div><div class="line">          success: <span class="function"><span class="keyword">function</span> (<span class="params">data, message, xhr</span>)</span>&#123;</div><div class="line">            widget.settings.onUploadSuccess.call(widget.element, widget.queuePos, data);</div><div class="line">          &#125;,</div><div class="line">          error: <span class="function"><span class="keyword">function</span> (<span class="params">xhr, status, errMsg</span>)</span>&#123;</div><div class="line">            widget.settings.onUploadError.call(widget.element, widget.queuePos, errMsg);</div><div class="line">          &#125;,</div><div class="line">          complete: <span class="function"><span class="keyword">function</span>(<span class="params">xhr, textStatus</span>)</span>&#123;</div><div class="line">            widget.processQueue();</div><div class="line">          &#125;</div><div class="line">        &#125;);</div><div class="line">       <span class="comment">// widget.settings.onUploadSuccess.call(widget.element, widget.queuePos, null);</span></div><div class="line">        widget.processQueue();</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    $.fn.mulUploader = <span class="function"><span class="keyword">function</span>(<span class="params">options</span>)</span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.each(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">            <span class="keyword">if</span>(!$.data(<span class="keyword">this</span>, pluginName))&#123;</div><div class="line">                $.data(<span class="keyword">this</span>, pluginName, <span class="keyword">new</span> MulUploader(<span class="keyword">this</span>, options));</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    <span class="comment">// -- Disable Document D&amp;D events to prevent opening the file on browser when we drop them</span></div><div class="line">    $(<span class="built_in">document</span>).on(<span class="string">'dragenter'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">e</span>) </span>&#123; e.stopPropagation(); e.preventDefault(); &#125;);</div><div class="line">    $(<span class="built_in">document</span>).on(<span class="string">'dragover'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">e</span>) </span>&#123; e.stopPropagation(); e.preventDefault(); &#125;);</div><div class="line">    $(<span class="built_in">document</span>).on(<span class="string">'drop'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">e</span>) </span>&#123; e.stopPropagation(); e.preventDefault(); &#125;);</div><div class="line">&#125;)(jQuery);</div></pre></td></tr></table></figure>
+</li>
+<li><p>使用</p>
+<ul>
+<li><p>页面元素</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&lt;div <span class="class"><span class="keyword">class</span></span>=<span class="string">"form-group"</span>&gt;</div><div class="line">    &lt;label for="insCommitDoc" class="col-sm-4 control-label"&gt;上传文件：&lt;/label&gt;</div><div class="line">    &lt;div <span class="class"><span class="keyword">class</span></span>=<span class="string">"col-sm-8"</span> id=<span class="string">"drag-and-drop-zone"</span>&gt;</div><div class="line">        &lt;input type=<span class="string">"file"</span> id=<span class="string">"insCommitDoc"</span>  multiple=<span class="string">"multiple"</span> name=<span class="string">"insCommitDoc"</span>/&gt;</div><div class="line">        &lt;div <span class="class"><span class="keyword">class</span></span>=<span class="string">"col-sm-8"</span>&gt;</div><div class="line">            &lt;p id=<span class="string">"uploadErrMsg"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"bg-danger"</span>&gt;</div><div class="line">            &lt;/p&gt;</div><div class="line">        &lt;/div&gt;</div><div class="line">    &lt;/div&gt;</div><div class="line">&lt;/div&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>js绑定</p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code class="js"><span class="comment">/**</span>
+<span class="comment"> * 多文件上传:支持Drop;多选;</span>
+<span class="comment"> *</span>
+<span class="comment"> */</span>
+<span class="keyword">var</span> id = <span class="number">-1</span>;
+$(<span class="string">'#drag-and-drop-zone'</span>).mulUploader({
+    url: <span class="string">'./upload'</span>,
+    dataType: <span class="string">'json'</span>,
+    fileName: <span class="string">'sfiles'</span>,
+    allowedTypes: <span class="string">'*'</span>,
+    extraData: {
+        source: <span class="number">1001</span>,
+        token: <span class="number">123</span>
+    },
+    maxFiles : <span class="number">5</span>,
+    onInit:<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>{
+        <span class="comment">//添加显示文件进度的DIV</span>
+        $(<span class="keyword">this</span>).append(<span class="string">"&lt;div id='fileDiv' class='col-sm-8' style='max-height:300px;overflow-y: auto; margin-top: 10px;'&gt;&lt;/div&gt;"</span>)
+        id ++;
+    },
+    onUploadProgress: <span class="function"><span class="keyword">function</span> (<span class="params">index, percent</span>) </span>{
+        $(<span class="string">"#"</span>+index+<span class="string">"_progress"</span> +<span class="string">" .progress-bar"</span>).css(
+            <span class="string">'width'</span>,
+            percent + <span class="string">'%'</span>
+        );
+    },
+    onUploadSuccess: <span class="function"><span class="keyword">function</span> (<span class="params">index, data</span>) </span>{
+        $.each(data, <span class="function"><span class="keyword">function</span> (<span class="params">index, file</span>) </span>{
+            <span class="keyword">if</span> (file.statusCode == <span class="number">200</span>) {
+                $(<span class="string">"#"</span> + id+<span class="string">"."</span>+index).val(file.postfix);
+                $(<span class="string">"#"</span> + index +<span class="string">"_progress"</span> + <span class="string">" .progress-bar"</span>).css(
+                    <span class="string">'width'</span>, <span class="string">'100%'</span>
+                ).html(<span class="string">"上传完成"</span>);
+            } <span class="keyword">else</span> {
+                <span class="built_in">console</span>.log(<span class="string">"statusCode:"</span> + file.statusCode);
+                $(<span class="string">"#uploadErrMsg"</span>).html(<span class="string">"statusCode:"</span> + file.statusCode+<span class="string">" msg:"</span>+file.errMsg);
+            }
+        });
+    },
+    onUploadError: <span class="function"><span class="keyword">function</span> (<span class="params">id, message</span>) </span>{
+        $(<span class="string">"#uploadErrMsg"</span>).html(message);
+    },
+    onFileTypeError: <span class="function"><span class="keyword">function</span> (<span class="params">file</span>) </span>{
+        $(<span class="string">"#uploadErrMsg"</span>).html(file.name + <span class="string">"cannot be added: must be an image"</span>);
+    },
+    onFileSizeError: <span class="function"><span class="keyword">function</span> (<span class="params">file</span>) </span>{
+        $(<span class="string">"#uploadErrMsg"</span>).html(file.name + <span class="string">"cannot be added: size excess limit"</span>);
+    },
+    onFallbackMode: <span class="function"><span class="keyword">function</span> (<span class="params">message</span>) </span>{
+        $(<span class="string">"#uploadErrMsg"</span>).html(<span class="string">"Browser not supported(do something else here!): "</span>);
+    },
+    onFileExtError: <span class="function"><span class="keyword">function</span>(<span class="params">file</span>)</span>{
+        $(<span class="string">"#uploadErrMsg"</span>).html(file.name + <span class="string">"cannot be added: extension excess error!"</span>);
+    },
+    onFilesMaxError: <span class="function"><span class="keyword">function</span>(<span class="params">file</span>)</span>{
+        $(<span class="string">"#uploadErrMsg"</span>).html(file.name + <span class="string">"cannot be added: num excess limit!"</span>);
+    },
+    onNewFile: <span class="function"><span class="keyword">function</span> (<span class="params">index, file</span>) </span>{
+        <span class="comment">//新添加file</span>
+        $(<span class="string">"#fileDiv"</span>).append(<span class="string">"&lt;div class='col-sm-8'&gt;"</span> +
+                <span class="string">"&lt;input type='text' value="</span> +file.name + <span class="string">"&gt;"</span> +
+                <span class="string">"&lt;input type='hidden' id="</span>+id+<span class="string">"."</span>+index +<span class="string">" name="</span>+ id+<span class="string">"."</span>+index+<span class="string">".name"</span>+<span class="string">" value=''/&gt;"</span> +
+                <span class="string">"&lt;div id="</span>+index+<span class="string">"_progress"</span> + <span class="string">" class='progress'&gt;"</span> +
+                    <span class="string">" &lt;div class='progress-bar progress-bar-success progress-bar-striped' role='progressbar' style='width: 0%;'&gt;"</span>+
+                    <span class="string">"&lt;/div&gt;"</span> +
+                <span class="string">"&lt;/div&gt;"</span> +
+            <span class="string">"&lt;/div&gt;"</span>
+        );
+    }
+});
+</code></pre>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/08/14/uploader/" data-id="cj74vcsxw0004s1s6rywycaqp" class="article-share-link">Partager</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/web-tools/">web, tools</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/08/14/import/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Récent</strong>
+      <div class="article-nav-title">
+        
+          import（批量导入）
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/08/14/Mongo增量更新/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ancien</strong>
+      <div class="article-nav-title">Mongo增量更新</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Mot-clés</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mongo/">Mongo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web-tools/">web, tools</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Nuage de mot-clés</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Mongo/" style="font-size: 10px;">Mongo</a> <a href="/tags/web-tools/" style="font-size: 20px;">web, tools</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Articles récents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/08/28/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/14/Export/">export</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/14/import/">import（批量导入）</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/14/uploader/">uploader（多文件上传）</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/14/Mongo增量更新/">Mongo增量更新</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
