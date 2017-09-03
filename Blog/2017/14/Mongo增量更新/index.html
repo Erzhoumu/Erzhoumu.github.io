@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Mongo增量更新 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="问题描述：在开发过程中，我们发现对某个类，在前端进行部分字段的编辑，那么在后端进行存储时需要将其它未变更字段重新存储或者在前端添加hidden字段，如果类字段太多就是费时费力了，并且很容易留下坑，造成数据损失。 需求：只对变更的字段进行存储修改。 实现：1234567891011121314151617181920212223242526272829303132333435363738394041">
+<meta name="keywords" content="Mongo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mongo增量更新">
+<meta property="og:url" content="http://yoursite.com/2017/08/14/Mongo增量更新/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="问题描述：在开发过程中，我们发现对某个类，在前端进行部分字段的编辑，那么在后端进行存储时需要将其它未变更字段重新存储或者在前端添加hidden字段，如果类字段太多就是费时费力了，并且很容易留下坑，造成数据损失。 需求：只对变更的字段进行存储修改。 实现：1234567891011121314151617181920212223242526272829303132333435363738394041">
+<meta property="og:updated_time" content="2017-09-03T14:36:44.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Mongo增量更新">
+<meta name="twitter:description" content="问题描述：在开发过程中，我们发现对某个类，在前端进行部分字段的编辑，那么在后端进行存储时需要将其它未变更字段重新存储或者在前端添加hidden字段，如果类字段太多就是费时费力了，并且很容易留下坑，造成数据损失。 需求：只对变更的字段进行存储修改。 实现：1234567891011121314151617181920212223242526272829303132333435363738394041">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Mongo增量更新" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/08/14/Mongo增量更新/" class="article-date">
+  <time datetime="2017-08-13T16:00:00.000Z" itemprop="datePublished">2017-08-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Mongo增量更新
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h5 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h5><p>在开发过程中，我们发现对某个类，在前端进行部分字段的编辑，那么在后端进行存储时需要将其它未变更字段重新存储或者在前端添加hidden字段，如果类字段太多就是费时费力了，并且很容易留下坑，造成数据损失。</p>
+<h5 id="需求："><a href="#需求：" class="headerlink" title="需求："></a>需求：</h5><p>只对变更的字段进行存储修改。</p>
+<h5 id="实现："><a href="#实现：" class="headerlink" title="实现："></a>实现：</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * Mongo的增量更新;目前支持基本类型;以及Array;Set和List,类请继承BaseObject</div><div class="line"> * @Attention 只支持对原有数据的增加和修改,不支持删除;static 类型不更新; @JSONField(serialize=<span class="literal">false</span>)不更新</div><div class="line"> * @Attention 类结构中的基础类型需使用包装类型（int-&gt;Integer）</div><div class="line"> * @author  Nil</div><div class="line"> * @date 2017-7-22</div><div class="line"> *</div><div class="line"> * As the last ship sailed towards the distant horizon</div><div class="line"> *      I sat there watching on a rock</div><div class="line"> *       My mind slowly drifting away</div><div class="line"> *       Forming into my dream tale</div><div class="line"> *                       -The Dawn</div><div class="line"> */</div><div class="line">@Service</div><div class="line">public class MongoCommonService &#123;</div><div class="line"></div><div class="line">    @Autowired</div><div class="line">    private MongoTemplate mongoTemplate;</div><div class="line"></div><div class="line">    private static Logger logger = LoggerFactory.getLogger(MongoCommonService.class);</div><div class="line"></div><div class="line">    private Update doWithFields(final Object srcObject, final Update update, final String parentFieldName) &#123;</div><div class="line"></div><div class="line">        <span class="keyword">if</span>(srcObject == null) &#123;</div><div class="line">            <span class="built_in">return</span> update;</div><div class="line">        &#125;</div><div class="line">        Class srcClass = (Class)srcObject.getClass();</div><div class="line"></div><div class="line">        ReflectionUtils.doWithFields(srcClass, new ReflectionUtils.<span class="function"><span class="title">FieldCallback</span></span>() &#123;</div><div class="line">            @Override</div><div class="line">            public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException &#123;</div><div class="line">                doWithField(srcObject, field, update, parentFieldName);</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">        <span class="built_in">return</span> update;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    private Update doWithField (Object object, Field field, Update update, String parentFieldName) throws IllegalAccessException &#123;</div><div class="line"></div><div class="line">        boolean access = field.isAccessible();</div><div class="line">        field.setAccessible(<span class="literal">true</span>);</div><div class="line"></div><div class="line">        Object var = field.get(object);</div><div class="line">        <span class="keyword">if</span>(var == null) &#123;</div><div class="line">            <span class="built_in">return</span> update;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        //static 不更新</div><div class="line">        <span class="keyword">if</span>(Modifier.isStatic(field.getModifiers()))&#123;</div><div class="line">            <span class="built_in">return</span> update;</div><div class="line">        &#125;</div><div class="line">        //JsonField.serialize = <span class="literal">false</span>不更新</div><div class="line">        <span class="keyword">if</span>(field.isAnnotationPresent(JSONField.class) &amp;&amp; !field.getAnnotation(JSONField.class).serialize())&#123;</div><div class="line">            <span class="built_in">return</span> update;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        Class&lt;?&gt; <span class="built_in">type</span> = field.getType();</div><div class="line">        String fieldName = field.getName();</div><div class="line">        String updateField = parentFieldName == null?fieldName:parentFieldName+<span class="string">"."</span>+fieldName;</div><div class="line">        <span class="keyword">if</span>(type.isPrimitive() || <span class="built_in">type</span> == String.class || <span class="built_in">type</span> == Long.class || <span class="built_in">type</span> == Integer.class || <span class="built_in">type</span> == Date.class) &#123;</div><div class="line">            //简单类型直接赋值</div><div class="line">            update.set(updateField, var);</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span>(type.isArray()) &#123;</div><div class="line">            //数组只会更新和增加不会删除</div><div class="line">            int length = Array.getLength(var);</div><div class="line">            //对每个item进行处理</div><div class="line">            <span class="keyword">for</span> (int i = 0; i &lt; length; i++) &#123;</div><div class="line">                Object item = Array.get(var, i);</div><div class="line">                doWithFields(item, update, updateField + <span class="string">"."</span> +i);</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span>(List.class.isAssignableFrom(<span class="built_in">type</span>))&#123;</div><div class="line">            //对List操作</div><div class="line">            String methodKey = <span class="string">"get"</span> + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);</div><div class="line">            Method m;</div><div class="line">            try &#123;</div><div class="line">                m = object.getClass().getMethod(methodKey);</div><div class="line">                List list = (List) m.invoke(object);</div><div class="line">                <span class="keyword">for</span>(int i = 0; i &lt; list.size(); i++) &#123;</div><div class="line">                    Object item = list.get(i);</div><div class="line">                    doWithFields(item,update, updateField + <span class="string">"."</span> +i);</div><div class="line">                &#125;</div><div class="line">            &#125; catch (InvocationTargetException | NoSuchMethodException e) &#123;</div><div class="line">                logger.error(<span class="string">"[ 更新结构失败]:List=&#123;&#125;,msg=&#123;&#125;"</span>, updateField, e.getMessage());</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span>(Set.class.isAssignableFrom(<span class="built_in">type</span>))&#123;</div><div class="line">            //对Set操作</div><div class="line">            String methodKey = <span class="string">"get"</span> + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);</div><div class="line">            Method m;</div><div class="line">            try &#123;</div><div class="line">                m = object.getClass().getMethod(methodKey);</div><div class="line">                Set <span class="built_in">set</span> = (Set) m.invoke(object);</div><div class="line">                int index = 0;</div><div class="line">                <span class="keyword">while</span>(set.iterator().hasNext())&#123;</div><div class="line">                    Object item = set.iterator().next();</div><div class="line">                    doWithFields(item,update, updateField + <span class="string">"."</span> +index);</div><div class="line">                    index ++;</div><div class="line">                &#125;</div><div class="line">            &#125; catch (InvocationTargetException | NoSuchMethodException e) &#123;</div><div class="line">                logger.error(<span class="string">"[ 更新结构失败]:set=&#123;&#125;,msg=&#123;&#125;"</span>, updateField, e.getMessage());</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (BaseObject.class.isAssignableFrom(<span class="built_in">type</span>)) &#123;</div><div class="line">            //如果是类结构</div><div class="line">            doWithFields(var, update, updateField);</div><div class="line">        &#125;</div><div class="line">        field.setAccessible(access);</div><div class="line">        <span class="built_in">return</span> update;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    /**</div><div class="line">     * 只更新已经存在的</div><div class="line">     * @param query</div><div class="line">     * @param baseObj</div><div class="line">     * @param collection</div><div class="line">     */</div><div class="line"></div><div class="line">    public void dirtyUpdateFirst(Query query,Object baseObj, String collection)&#123;</div><div class="line">        Update update = new Update();</div><div class="line">        update = doWithFields(baseObj, update, null);</div><div class="line">        mongoTemplate.updateFirst(query,update, collection);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    /**</div><div class="line">     * 更新;不存在会新建</div><div class="line">     * @param query</div><div class="line">     * @param baseObj</div><div class="line">     * @param collection</div><div class="line">     */</div><div class="line">    public void dirtyUpsert (Query query,Object baseObj, String collection)&#123;</div><div class="line">        Update update = new Update();</div><div class="line">        update = doWithFields(baseObj, update, null);</div><div class="line">        mongoTemplate.upsert(query,update, collection);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="参考："><a href="#参考：" class="headerlink" title="参考："></a>参考：</h5><p><a href="http://www.jianshu.com/p/dd7b5a0e2f64" target="_blank" rel="external">http://www.jianshu.com/p/dd7b5a0e2f64</a></p>
+<h5 id="技术栈："><a href="#技术栈：" class="headerlink" title="技术栈："></a>技术栈：</h5><ul>
+<li>反射机制</li>
+<li>Mongo更新</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/08/14/Mongo增量更新/" data-id="cj74vcsxx0006s1s6l6pwpe30" class="article-share-link">Partager</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Mongo/">Mongo</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/08/14/uploader/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Récent</strong>
+      <div class="article-nav-title">
+        
+          uploader（多文件上传）
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Mot-clés</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mongo/">Mongo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web-tools/">web, tools</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Nuage de mot-clés</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Mongo/" style="font-size: 10px;">Mongo</a> <a href="/tags/web-tools/" style="font-size: 20px;">web, tools</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Articles récents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/08/28/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/14/Export/">export</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/14/import/">import（批量导入）</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/14/uploader/">uploader（多文件上传）</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/14/Mongo增量更新/">Mongo增量更新</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
