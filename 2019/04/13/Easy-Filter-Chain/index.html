@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"breezyz.xyz","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="背景业务中当我们想调用一个方法时经常会做重重的校验，并且多个方法的校验很多时候是类似的，重复的代码和逻辑是我们不愿意看到的。我们希望的是可也根据业务抽象出一个个的拦截器，我在调用时可以随意的插拔这些拦截器。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一种责任链模式的方法拦截器">
+<meta property="og:url" content="http://breezyz.xyz/2019/04/13/Easy-Filter-Chain/index.html">
+<meta property="og:site_name" content="BreezyzのBlog">
+<meta property="og:description" content="背景业务中当我们想调用一个方法时经常会做重重的校验，并且多个方法的校验很多时候是类似的，重复的代码和逻辑是我们不愿意看到的。我们希望的是可也根据业务抽象出一个个的拦截器，我在调用时可以随意的插拔这些拦截器。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://breezyz.xyz/2019/04/13/Easy-Filter-Chain/FilterChain.png">
+<meta property="og:image" content="http://breezyz.xyz/2019/04/13/Easy-Filter-Chain/work.png">
+<meta property="article:published_time" content="2019-04-12T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-13T16:20:52.331Z">
+<meta property="article:author" content="Breezyz">
+<meta property="article:tag" content="spring">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://breezyz.xyz/2019/04/13/Easy-Filter-Chain/FilterChain.png">
+
+<link rel="canonical" href="http://breezyz.xyz/2019/04/13/Easy-Filter-Chain/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>一种责任链模式的方法拦截器 | BreezyzのBlog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">BreezyzのBlog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Make it easyer!</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://breezyz.xyz/2019/04/13/Easy-Filter-Chain/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Breezyz">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BreezyzのBlog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          一种责任链模式的方法拦截器
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-04-13 00:00:00" itemprop="dateCreated datePublished" datetime="2019-04-13T00:00:00+08:00">2019-04-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web/" itemprop="url" rel="index">
+                    <span itemprop="name">web</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>业务中当我们想调用一个方法时经常会做重重的校验，并且多个方法的校验很多时候是类似的，重复的代码和逻辑是我们不愿意看到的。我们希望的是可也根据业务抽象出一个个的拦截器，我在调用时可以随意的插拔这些拦截器。</p>
+<a id="more"></a>
+<h2 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h2><p>1.不侵入主要业务逻辑的情况下，为方法添加拦截器<br>2.拦截器是插拔便利的<br>3.拦截器的是有序的<br>4.过程可控：可以随时跳出</p>
+<h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p>第一条最简单的方法就是利用AOP来做，使用MethodInterceptor进行方法拦截；插拔方便可以利用注解；第3，4条可以设置一种链条式的拦截器开达到要求。</p>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><h3 id="责任链"><a href="#责任链" class="headerlink" title="责任链"></a>责任链</h3><p>首先我们先来实现个责任链。<br>希望的过程：<br><img src="/2019/04/13/Easy-Filter-Chain/FilterChain.png" alt="责任链"></p>
+<h4 id="拦截器-Filter"><a href="#拦截器-Filter" class="headerlink" title="拦截器 Filter"></a>拦截器 Filter</h4><p>首先定义一个接口，要做的事就是拦截：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface Filter &#123;</span><br><span class="line">    void check(FilterChain chain) throws Throwable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="链条-FilterChain"><a href="#链条-FilterChain" class="headerlink" title="链条 FilterChain"></a>链条 FilterChain</h4><p>作为一个链条，就是将所有的拦截器，按顺序串联起来。<br>首先我们采集所有的拦截器放到FilterParam中，传给Chain，并定义一个游标；<br>初始化一个Chain：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">public FilterChain(FilterParam param) throws IllegalAccessException, InstantiationException &#123;</span><br><span class="line">        this.param &#x3D; param;</span><br><span class="line">        Map&lt;Class, DoFilter&gt; filterMap &#x3D; param.getFilters();</span><br><span class="line"></span><br><span class="line">        List&lt;Filter&gt; filters &#x3D; new ArrayList&lt;&gt;();</span><br><span class="line">        if(filterMap !&#x3D; null &amp;&amp; !filterMap.isEmpty())&#123;</span><br><span class="line"></span><br><span class="line">            for(Class clazz : filterMap.keySet())&#123;</span><br><span class="line">                Filter filter;</span><br><span class="line">                try &#123;</span><br><span class="line">                    filter &#x3D; (Filter) param.getApplicationContext().getBean(clazz);</span><br><span class="line">                &#125; catch (NoSuchBeanDefinitionException e) &#123;</span><br><span class="line">                    filter &#x3D; (Filter) clazz.newInstance();</span><br><span class="line">                &#125;</span><br><span class="line">                if(filter &#x3D;&#x3D; null) &#123;</span><br><span class="line">                    logger.info(&quot;not found filter&#x3D;&#123;&#125;&quot;, clazz.getSimpleName());</span><br><span class="line">                &#125; else &#123;</span><br><span class="line">                    filters.add(filter);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        iterator &#x3D; filters.iterator();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>执行链条时，利用游标来控制，Guarder在guarder方法中会调用chain的guard()来移动游标：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public void doFilter() throws Throwable &#123;</span><br><span class="line">     Filter filter;</span><br><span class="line">     if(iterator!&#x3D;null &amp;&amp; iterator.hasNext() &amp;&amp; !param.isStop())&#123;</span><br><span class="line">         filter &#x3D; iterator.next();</span><br><span class="line">         logger.debug(&quot;&lt;FilterChain&gt; do next filter &#123;&#125;&quot;</span><br><span class="line">                 , filter.getClass().getSimpleName());</span><br><span class="line">         filter.check(this);</span><br><span class="line">     &#125; else &#123;</span><br><span class="line">         action();</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>Filter内可以通过Stop标识随时停止filterChain。</p>
+<p>最后通过GuarderChain的guarder方法,就可以调用所有的拦截器啦。<br>调用过程大概如下：<br><img src="/2019/04/13/Easy-Filter-Chain/work.png" alt="调用过程"><br>其中的action()方法 是个抽象方法，可以继承GuarderChain自己去实现逻辑，一般情况下action来执行Method的方法，方法的执行结果或者错误信息存在param里。<br>简单的实现一下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">@Override</span><br><span class="line">   public void action() throws Throwable &#123;</span><br><span class="line">       Object result;</span><br><span class="line">       if(null &#x3D;&#x3D; param.getMethodInvocation())&#123;</span><br><span class="line">           return;</span><br><span class="line">       &#125;</span><br><span class="line">       result &#x3D; param.getMethodInvocation().proceed();</span><br><span class="line">       param.setResult(result);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="MethodInterceptor"><a href="#MethodInterceptor" class="headerlink" title="MethodInterceptor"></a>MethodInterceptor</h3><p>然后就实现MethodInterceptor接口来实现方法的拦截：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public class MyMethodInterceptor implements MethodInterceptor &#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public Object invoke(MethodInvocation methodInvocation) throws Throwable &#123;</span><br><span class="line">        &#x2F;&#x2F; todo 做一些拦截</span><br><span class="line">       return methodInvocation.proceed();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为了插拔比较方便，可以采用注解的方式，定义注解为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">@Target(&#123; ElementType.METHOD &#125;)</span><br><span class="line">@Retention(RetentionPolicy.RUNTIME)</span><br><span class="line">@Repeatable(DoFilters.class)</span><br><span class="line">@Documented</span><br><span class="line">public @interface DoFilter &#123;</span><br><span class="line"></span><br><span class="line">    &#x2F;**</span><br><span class="line">     * 过滤器bean名称</span><br><span class="line">     *&#x2F;</span><br><span class="line">    Class filter();</span><br><span class="line"></span><br><span class="line">    &#x2F;**</span><br><span class="line">     * 参数翻译器</span><br><span class="line">     *&#x2F;</span><br><span class="line">    Class translator() default NoneMethodParamTranslator.class;</span><br><span class="line"></span><br><span class="line">    &#x2F;**</span><br><span class="line">     * 注解类型</span><br><span class="line">     *&#x2F;</span><br><span class="line">    int type() default 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>1.8之后支持多个相同注解， 所以我们可以在interceptor里面收集注解，添加到chain中。<br>实现一下interceptor：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">public class MethodChainInterceptor implements MethodInterceptor, ApplicationContextAware &#123;</span><br><span class="line"></span><br><span class="line">    private static Logger logger &#x3D; LoggerFactory.getLogger(MethodChainInterceptor.class);</span><br><span class="line">    private ApplicationContext applicationContext;</span><br><span class="line">    </span><br><span class="line">    @Override</span><br><span class="line">    public Object invoke(MethodInvocation methodInvocation) throws Throwable &#123;</span><br><span class="line">        &#x2F;&#x2F;检查需要filter的方法</span><br><span class="line">        Method method &#x3D; methodInvocation.getMethod();</span><br><span class="line"></span><br><span class="line">        DoFilter[] methodChecks &#x3D; method.getAnnotationsByType(DoFilter.class);</span><br><span class="line">        if(methodChecks &#x3D;&#x3D; null || methodChecks.length &#x3D;&#x3D; 0)&#123;</span><br><span class="line">            return methodInvocation.proceed();</span><br><span class="line">        &#125;</span><br><span class="line">        &#x2F;&#x2F;收集filter</span><br><span class="line">        LinkedHashMap&lt;Class, DoFilter&gt; filterMap &#x3D; new LinkedHashMap&lt;&gt;(16);</span><br><span class="line">        Map&lt;Class, Class&gt; translators&#x3D; new HashMap&lt;&gt;(16);</span><br><span class="line"></span><br><span class="line">        for(DoFilter filter : methodChecks)&#123;</span><br><span class="line">            if(filter.type() &#x3D;&#x3D; 0) &#123;</span><br><span class="line">                filterMap.put(filter.filter(), filter);</span><br><span class="line">                translators.put(filter.filter(), filter.translator());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        &#x2F;&#x2F;将收集的filter传给链条chain</span><br><span class="line">        MethodFilterParam param &#x3D; new MethodFilterParam();</span><br><span class="line">        param.setMethodInvocation(methodInvocation);</span><br><span class="line">        param.setFilters(filterMap);</span><br><span class="line">        param.setTranslators(translators);</span><br><span class="line">        param.setApplicationContext(applicationContext);</span><br><span class="line"></span><br><span class="line">        &#x2F;&#x2F;执行方法前执行</span><br><span class="line"></span><br><span class="line">        MethodFilterChain chain &#x3D; new MethodFilterChain(param);</span><br><span class="line">        logger.debug(&quot;startFilterChain&quot; );</span><br><span class="line">        chain.doFilter();</span><br><span class="line">        return param.getResult();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="需要的配置"><a href="#需要的配置" class="headerlink" title="需要的配置"></a>需要的配置</h3><p>依赖aop，需要的配置项目如下<br>    <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">  &lt;bean id&#x3D;&quot;methodInterceptor&quot; class&#x3D;&quot;com.breezyz.filter.interceptors.MethodChainInterceptor&quot;&#x2F;&gt;</span><br><span class="line">&lt;bean id&#x3D;&quot;requestInterceptor&quot; class&#x3D;&quot;com.breezyz.filter.interceptors.RequestInterceptor&quot;&#x2F;&gt;</span><br><span class="line">&lt;aop:config  proxy-target-class&#x3D;&quot;true&quot;&gt;</span><br><span class="line">    &lt;aop:pointcut id&#x3D;&quot;filterPointCut&quot; expression&#x3D; &quot;(@annotation(com.breezyz.filter.annotation.DoFilter) || (@annotation(com.breezyz.filter.annotation.DoFilters)))&quot;&#x2F;&gt;</span><br><span class="line">    &lt;aop:advisor advice-ref&#x3D;&quot;methodInterceptor&quot; pointcut-ref&#x3D;&quot;filterPointCut&quot;&#x2F;&gt;</span><br><span class="line">&lt;&#x2F;aop:config&gt;</span><br></pre></td></tr></table></figure></p>
+<h3 id="举个例子"><a href="#举个例子" class="headerlink" title="举个例子"></a>举个例子</h3><p>举个打印日志的例子</p>
+<h4 id="filter"><a href="#filter" class="headerlink" title="filter"></a>filter</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public class DefaultLogFilter implements Filter &#123;</span><br><span class="line">    private static Logger logger &#x3D; LoggerFactory.getLogger(DefaultLogFilter.class);</span><br><span class="line">    @Override</span><br><span class="line">    public void check(FilterChain chain) throws Throwable &#123;</span><br><span class="line">        FilterParam param &#x3D; chain.getParam();</span><br><span class="line">        Long startTime &#x3D; System.currentTimeMillis();</span><br><span class="line">        if(param !&#x3D; null)&#123;</span><br><span class="line">            logger.info(&quot;startDoMethod:&quot; + param.getFilterSign() + &quot;; start&#x3D;&quot; + startTime);</span><br><span class="line">        &#125;</span><br><span class="line">        chain.doFilter();</span><br><span class="line">        Long endTime &#x3D; System.currentTimeMillis();</span><br><span class="line">        if(param !&#x3D; null)&#123;</span><br><span class="line">            logger.info(&quot;endDoMethod:&quot; + param.getFilterSign() + &quot;; end&#x3D;&quot; + endTime + &quot;,用时:&quot; + (endTime - startTime));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="调用"><a href="#调用" class="headerlink" title="调用"></a>调用</h4><p>定义一个test方法，当testMethod调用时，责任链就会执行了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">@Service</span><br><span class="line">public class TestService &#123;</span><br><span class="line">    private static Logger logger &#x3D; LoggerFactory.getLogger(TestService.class);</span><br><span class="line">    @DoFilter(filter &#x3D; DefaultExceptionFilter.class)</span><br><span class="line">    @DoFilter(filter &#x3D; DefaultLogFilter.class)</span><br><span class="line">    public void test() throws Exception &#123;</span><br><span class="line">        logger.info(&quot;doTest&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>到这就完成了一个方便插拔的责任链拦截器。</p>
+<h2 id="未来"><a href="#未来" class="headerlink" title="未来"></a>未来</h2><h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/spring/" rel="tag"><i class="fa fa-tag"></i> spring</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/08/14/Mongo-hide-update/" rel="prev" title="Mongo增量更新">
+      <i class="fa fa-chevron-left"></i> Mongo增量更新
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/02/13/Filter-and-Interceptor-and-Aop-in-Spring/" rel="next" title="Spring 中的Filter，Interceptor，Aop">
+      Spring 中的Filter，Interceptor，Aop <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#目标"><span class="nav-number">2.</span> <span class="nav-text">目标</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#思路"><span class="nav-number">3.</span> <span class="nav-text">思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现"><span class="nav-number">4.</span> <span class="nav-text">实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#责任链"><span class="nav-number">4.1.</span> <span class="nav-text">责任链</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#拦截器-Filter"><span class="nav-number">4.1.1.</span> <span class="nav-text">拦截器 Filter</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#链条-FilterChain"><span class="nav-number">4.1.2.</span> <span class="nav-text">链条 FilterChain</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MethodInterceptor"><span class="nav-number">4.2.</span> <span class="nav-text">MethodInterceptor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#需要的配置"><span class="nav-number">4.3.</span> <span class="nav-text">需要的配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#举个例子"><span class="nav-number">4.4.</span> <span class="nav-text">举个例子</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#filter"><span class="nav-number">4.4.1.</span> <span class="nav-text">filter</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#调用"><span class="nav-number">4.4.2.</span> <span class="nav-text">调用</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#未来"><span class="nav-number">5.</span> <span class="nav-text">未来</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Breezyz"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Breezyz</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Erzhoumu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Erzhoumu" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:824238459@qq.com" title="E-Mail → mailto:824238459@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+<!-- 添加近期文章 -->
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <!-- modify icon to fire by szw -->
+      <i class="fa fa-history fa-" aria-hidden="true"></i>
+      近期文章
+    </div>
+    <ul class="links-of-blogroll-list">
+      
+      
+        <li>
+          <a href="/" title="" target="_blank"></a>
+        </li>
+      
+        <li>
+          <a href="/" title="" target="_blank"></a>
+        </li>
+      
+        <li>
+          <a href="/" title="" target="_blank"></a>
+        </li>
+      
+        <li>
+          <a href="/" title="" target="_blank"></a>
+        </li>
+      
+        <li>
+          <a href="/" title="" target="_blank"></a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2018 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Breezyz</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="site-uv">
+       我的第 <span class="busuanzi-value" id="busuanzi_value_site_uv"></span> 位朋友，
+    </span>
+   <span class="site-pv">
+       历经 <span class="busuanzi-value" id="busuanzi_value_site_pv"></span> 次回眸才与你相遇
+   </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '7d36211628f157602917',
+      clientSecret: '3a2c25564dd922bbdf6d73bf1e691fcfcab52d81',
+      repo        : 'Erzhoumu.github.io',
+      owner       : 'Erzhoumu',
+      admin       : ['Erzhoumu'],
+      id          : '368b2493f954fff8d9898787ed8e5c32',
+        language: '',
+      distractionFreeMode: false
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+<script>
+  $(document).ready(function () {
+    $(".header-inner").animate({padding: "25px 0 25px"}, 1000);
+  });
+</script>
+</body>
+</html>

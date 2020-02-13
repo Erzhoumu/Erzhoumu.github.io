@@ -158,7 +158,7 @@ body {
   background: #fff;
   color: #555;
   font-family: 'Monda', "PingFang SC", "Microsoft YaHei", sans-serif;
-  font-size: 1em;
+  font-size: 0.8em;
   line-height: 2;
 }
 @media (max-width: 991px) {
@@ -1151,7 +1151,7 @@ pre .javascript .function {
 }
 .links-of-author a::before,
 .links-of-author span.exturl::before {
-  background: #946eff;
+  background: #d5b400;
   border-radius: 50%;
   content: ' ';
   display: inline-block;
@@ -2428,7 +2428,7 @@ header {
   color: #1890ff;
 }
 .back-to-top .fa-arrow-up:before {
-  color: #ff87dd;
+  color: #f2629d;
 }
 a,
 span.exturl {

@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"breezyz.xyz","root":"/","scheme":"Muse","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":true,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="背景问题描述：一个很实际的问题，在开车时变道经常发生，我们首先先观察相邻车道是否满足变道要求，如果满足那么变道，但是往往是听到后面按喇叭，紧接着可能再骂两句，可是我的确没看到后方有车呀。 汽车的后方视野如图来表示：  ○1-○3：右后视镜可见区域；  ○2-○4：B柱挡住的视野；  ○3-○4：不可见区域即为盲点。  很明显的后视镜的视野范围是有限的，加之a、b柱的存在造成的视野盲区是很大的，必然">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于视觉的车辆变道危险判断和预警系统">
+<meta property="og:url" content="http://breezyz.xyz/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/index.html">
+<meta property="og:site_name" content="BreezyzのBlog">
+<meta property="og:description" content="背景问题描述：一个很实际的问题，在开车时变道经常发生，我们首先先观察相邻车道是否满足变道要求，如果满足那么变道，但是往往是听到后面按喇叭，紧接着可能再骂两句，可是我的确没看到后方有车呀。 汽车的后方视野如图来表示：  ○1-○3：右后视镜可见区域；  ○2-○4：B柱挡住的视野；  ○3-○4：不可见区域即为盲点。  很明显的后视镜的视野范围是有限的，加之a、b柱的存在造成的视野盲区是很大的，必然">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://breezyz.xyz/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/1.png">
+<meta property="og:image" content="http://breezyz.xyz/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/2.png">
+<meta property="og:image" content="http://breezyz.xyz/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/3.png">
+<meta property="og:image" content="http://breezyz.xyz/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/4.png">
+<meta property="og:image" content="http://breezyz.xyz/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/5.png">
+<meta property="og:image" content="http://breezyz.xyz/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/6.png">
+<meta property="og:image" content="http://breezyz.xyz/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/7.png">
+<meta property="og:image" content="http://breezyz.xyz/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/8.png">
+<meta property="og:image" content="http://breezyz.xyz/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/9.png">
+<meta property="og:image" content="http://breezyz.xyz/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/12.png">
+<meta property="og:image" content="http://breezyz.xyz/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/10.png">
+<meta property="og:image" content="http://breezyz.xyz/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/11.png">
+<meta property="article:published_time" content="2016-12-31T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-13T15:55:28.091Z">
+<meta property="article:author" content="Breezyz">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://breezyz.xyz/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/1.png">
+
+<link rel="canonical" href="http://breezyz.xyz/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>基于视觉的车辆变道危险判断和预警系统 | BreezyzのBlog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">BreezyzのBlog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Make it easyer!</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://breezyz.xyz/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Breezyz">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BreezyzのBlog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          基于视觉的车辆变道危险判断和预警系统
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-01-01 00:00:00" itemprop="dateCreated datePublished" datetime="2017-01-01T00:00:00+08:00">2017-01-01</time>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><h4 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h4><p>一个很实际的问题，在开车时变道经常发生，我们首先先观察相邻车道是否满足变道要求，如果满足那么变道，但是往往是听到后面按喇叭，紧接着可能再骂两句，可是我的确没看到后方有车呀。</p>
+<p>汽车的后方视野如图来表示：<br><img src="/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/1.png" alt="汽车的后方视野"></p>
+<blockquote>
+<p>○1-○3：右后视镜可见区域；<br>  ○2-○4：B柱挡住的视野；<br>  ○3-○4：不可见区域即为盲点。</p>
+</blockquote>
+<p>很明显的后视镜的视野范围是有限的，加之a、b柱的存在造成的视野盲区是很大的，必然会影响驾驶员的判断。<br>可见盲区问题是影响变道安全的一个重要原因。</p>
+<a id="more"></a>
+<h4 id="目前的解决方法："><a href="#目前的解决方法：" class="headerlink" title="目前的解决方法："></a>目前的解决方法：</h4><ul>
+<li>加广角后视镜<br>也就是在后视镜上添加一个凸透镜来增大视野范围，增加视野是有限的。</li>
+<li>雷达装置<br>不直观，探测距离短，造价高。</li>
+<li>通过一些辅助设备，如行车记录仪<br>目前市面上的行车记录仪，可以通过摄像头将画面呈现给驾驶员。<br>但是图像有畸变；屏幕尺寸不够大。这两点都会增加驾驶员的负担。</li>
+</ul>
+<h4 id="小结："><a href="#小结：" class="headerlink" title="小结："></a>小结：</h4><p>由于盲区的存在，变道会存在一定的风险，目前的解决方法不足以解决。我希望的是一个在变道的时候，告诉我后方是否安全，并将危险展示给我的一个东西。</p>
+<hr>
+<h3 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h3><p>根据需要我们要解决两个方面的问题：盲区视野和智能提醒。</p>
+<h4 id="盲区视野："><a href="#盲区视野：" class="headerlink" title="盲区视野："></a>盲区视野：</h4><ul>
+<li>采集<br>直接显示给司机车辆变道时需要的视野是最直接也最好的，所以利用相机是个不错的选择。<br>优点：范围大、造价低，直观。</li>
+<li>可视化<br>需要将相机采集的数据显示出来，如果可以和一些车载设备例如导航设备、行车记录仪等这些自带显示器的设备结合会是不错的选择，但是目前车载设备没有这方面的接口。<br>没办法，只好利用一台手机来显示。</li>
+</ul>
+<h4 id="智能提醒："><a href="#智能提醒：" class="headerlink" title="智能提醒："></a>智能提醒：</h4><p>能够提醒危险首要需要的是能够判断危险。</p>
+<ul>
+<li><p>危险判断<br>要求：准确、稳定、及时。<br>模型：TTC（Time To Collision）（最常用）。<br>数据：TTC模型需要相对车速、车距信息，现在有的数据只是后方的图像，所以智能从图像中提取需要的信息。</p>
+<blockquote>
+<h6 id="问题来了，如何从图像中提取需要的车辆信息？"><a href="#问题来了，如何从图像中提取需要的车辆信息？" class="headerlink" title="问题来了，如何从图像中提取需要的车辆信息？"></a>问题来了，如何从图像中提取需要的车辆信息？</h6><p>需要的技术：车辆检测、跟踪；GPS测速；单目测距。<br>实际道路环境是复杂的，行驶中的车辆有以下特征：车辆会相互遮挡；车辆之间颜色、形状等特征相似；光照变化；比较短的相邻时刻，位置和形状变化不大。<br>根据以上特征，可以选择合适的方法。</p>
+</blockquote>
+<ul>
+<li>车辆检测<br>  方法：利用基于机器学习的检测方法。分类器：Adaboost，特征：Haar-like。<br>  结果：可以得到车辆在图像内的矩形位置。</li>
+<li>车辆跟踪<br>  方法：区域匹配和卡尔曼滤波的跟踪（利用车辆质心位置和形状作为匹配元素，利用预测值与观测值做匹配）<br>  结果：可以在时域上关联车辆。</li>
+<li>测距<br>  方法：单目测距，利用小孔成像原理进行坐标转换。<br>  结果：获得车辆世界坐标，然后计算车距。</li>
+<li>测速<br>  方法： GPS测速（用google map 提供的经纬度转换距离公式，获得距离进而得到速度）。<br>  结果：获得本车车速，根据车距获得相对速度进而获得后车速度。</li>
+</ul>
+<blockquote>
+<p>到此,危险判断模型需要的数据就有啦。</p>
+</blockquote>
+</li>
+<li><p>危险的反馈<br>一般的提醒方式有三种：声音、接触（震动）、图像。<br>既然使用手机作为可视化设备，以上三种可以同时实现，足够提醒司机了。</p>
+</li>
+</ul>
+<p>总体设计思维导图如图2：<br><img src="/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/2.png" alt="分析图"><br>系统设计如图3：<br><img src="/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/3.png" alt="模块图"></p>
+<hr>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>我是比较看好Android在车载领域的应用前景的，所以为了以后和车载设备对接，在Android平台实现了系统。<br>设备要求：一台Android手机，运行速度不要太慢吧（本人手机MI4）。<br>开发语言：Java + Python<br>开发工具：AndroidStudio，OpenCV</p>
+<p>实现类图如下图所示：<br><img src="/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/4.png" alt="类图"></p>
+<p>实现结果：<br><img src="/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/5.png" alt="系统实现"></p>
+<hr>
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><p>由于实验环境的限制和出于安全的考虑，利用在实际驾驶过程中随机拍摄的视频来验证系统的可行性。</p>
+<h4 id="实验设计"><a href="#实验设计" class="headerlink" title="实验设计"></a>实验设计</h4><p>验证可行性主要从以下方面验证：</p>
+<ul>
+<li>及时性<br>系统可否及时的给出结果</li>
+<li>准确性<br>数据误差是否会影响危险判断结果</li>
+<li>稳定性<br>长久运行，是否会造成性能的下降和错误的累积</li>
+</ul>
+<h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><h5 id="及时性验证"><a href="#及时性验证" class="headerlink" title="及时性验证"></a>及时性验证</h5><p>从图像录入到系统返回结果的用时统计如下图，图像分辨率为630*320，一帧大概用时300ms。<br><img src="/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/6.png" alt="正确率统计"></p>
+<blockquote>
+<p>300ms，车辆相对位移不会超过1m，在这么短的距离内，驾驶员肯定能够看到后车。</p>
+</blockquote>
+<h5 id="准确性验证"><a href="#准确性验证" class="headerlink" title="准确性验证"></a>准确性验证</h5><ul>
+<li><p>检测、跟踪准确率<br>定义一个序列中车辆检测的准确率为:Precision=(TP - FP)/N</p>
+<p>TP(True Positive) 表示正确检测为车辆的帧数。FP（False Positive）表示存在将非车辆区域检测为车辆区域的帧数。N为序列的总帧数。<br>统计结果：<br><img src="/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/7.png" alt="正确率统计"></p>
+<blockquote>
+<p>加入跟踪后可以提高准确率，如果对遮挡，摄像机摆动等进行处理，准确率还可以提高。</p>
+</blockquote>
+</li>
+<li><p>测距误差<br>定义距离测量误差为:deviation =  (|CD-TD|)/TD<br>CD(Calculated Distance)为计算距离。TD(True Distance)为真实距离.<br>统计结果：<br><img src="/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/8.png" alt="测距误差"></p>
+<blockquote>
+<p>测距误差在1.5%以内。</p>
+</blockquote>
+</li>
+<li><p>测速误差<br>在实际驾驶中，车速很难保持稳定不变，所以我们对实际行驶140秒时间的速度变化进行了记录。每秒获得一次计算速度；每10秒记录一次实际速度。<br>统计结果：<br><img src="/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/9.png" alt="测速误差"></p>
+<blockquote>
+<p>计算结果可以表征速度的变化趋势，车速在稳定状况下，误差在0.5m/s上下波动。危险模型与相对速度有关，测量速度为更好的变现状况，所以误差满足。</p>
+</blockquote>
+</li>
+<li><p>执行一次造成的误差<br>统计数据表明车辆完成平稳安全的加速换道过程用时一般在3~5秒；<br>根据经验，相对车速一般在3m/s以内；安全距离（车辆变道成功后，与后车保持的距离）一般取5米；所以危险检测距离取20米即可。<br>假设t时刻车距为a，t+1时刻车距为b，那么误差距离最大为c= a×1.5%+b×1.5%。处理时间为300ms，则一次计算时间内相对位移为0.9m左右，所以取 a= b+1，<br>则c= 0.03a + 0.015。a最大为20，所以最大误差在1米以内。<br>而建立的危险模型中，两车要求保持5m范围之内，所以在1m的测量误差内可以保证安全。</p>
+</li>
+</ul>
+<h5 id="稳定性"><a href="#稳定性" class="headerlink" title="稳定性"></a>稳定性</h5><p>  1、检测为每次检测，距离为每次测量，所以不受上一帧图像影响；<br>  2、跟踪采用Kalman滤波获得，所以与之前的每一帧有关，但是也得益于Kalman算法，跟踪可以对检测结构进行校正</p>
+<ul>
+<li><p>跟踪的结果校正<br>过程如图所示：<br><img src="/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/12.png" alt="结果校正过程"></p>
+<p>只是检测：<br><img src="/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/10.png" alt="测速误差"><br>加入跟踪：<br><img src="/2017/01/01/Vision-Based-Risk-Judge-and-Early-Warning-for-Lane-Changing/11.png" alt="测速误差"></p>
+<blockquote>
+<p>经过三次检测就可以排除错检车辆，同理也会重新添加漏检车辆。所以这种跟踪机制，增加了系统的健壮性。</p>
+</blockquote>
+</li>
+</ul>
+<h5 id="结论：实验结果表明，本系统可以及时有效的识别危险。"><a href="#结论：实验结果表明，本系统可以及时有效的识别危险。" class="headerlink" title="结论：实验结果表明，本系统可以及时有效的识别危险。"></a>结论：实验结果表明，本系统可以及时有效的识别危险。</h5>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/01/01/hello-world/" rel="prev" title="Hello World">
+      <i class="fa fa-chevron-left"></i> Hello World
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/08/14/uploader/" rel="next" title="uploader（多文件上传）">
+      uploader（多文件上传） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#问题描述："><span class="nav-number">1.1.</span> <span class="nav-text">问题描述：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#目前的解决方法："><span class="nav-number">1.2.</span> <span class="nav-text">目前的解决方法：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#小结："><span class="nav-number">1.3.</span> <span class="nav-text">小结：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设计"><span class="nav-number">2.</span> <span class="nav-text">设计</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#盲区视野："><span class="nav-number">2.1.</span> <span class="nav-text">盲区视野：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#智能提醒："><span class="nav-number">2.2.</span> <span class="nav-text">智能提醒：</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#问题来了，如何从图像中提取需要的车辆信息？"><span class="nav-number">2.2.0.1.</span> <span class="nav-text">问题来了，如何从图像中提取需要的车辆信息？</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现"><span class="nav-number">3.</span> <span class="nav-text">实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#验证"><span class="nav-number">4.</span> <span class="nav-text">验证</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#实验设计"><span class="nav-number">4.1.</span> <span class="nav-text">实验设计</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实验结果"><span class="nav-number">4.2.</span> <span class="nav-text">实验结果</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#及时性验证"><span class="nav-number">4.2.1.</span> <span class="nav-text">及时性验证</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#准确性验证"><span class="nav-number">4.2.2.</span> <span class="nav-text">准确性验证</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#稳定性"><span class="nav-number">4.2.3.</span> <span class="nav-text">稳定性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#结论：实验结果表明，本系统可以及时有效的识别危险。"><span class="nav-number">4.2.4.</span> <span class="nav-text">结论：实验结果表明，本系统可以及时有效的识别危险。</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Breezyz"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Breezyz</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Erzhoumu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Erzhoumu" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:824238459@qq.com" title="E-Mail → mailto:824238459@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+<!-- 添加近期文章 -->
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <!-- modify icon to fire by szw -->
+      <i class="fa fa-history fa-" aria-hidden="true"></i>
+      近期文章
+    </div>
+    <ul class="links-of-blogroll-list">
+      
+      
+        <li>
+          <a href="/" title="" target="_blank"></a>
+        </li>
+      
+        <li>
+          <a href="/" title="" target="_blank"></a>
+        </li>
+      
+        <li>
+          <a href="/" title="" target="_blank"></a>
+        </li>
+      
+        <li>
+          <a href="/" title="" target="_blank"></a>
+        </li>
+      
+        <li>
+          <a href="/" title="" target="_blank"></a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2018 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Breezyz</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="site-uv">
+       我的第 <span class="busuanzi-value" id="busuanzi_value_site_uv"></span> 位朋友，
+    </span>
+   <span class="site-pv">
+       历经 <span class="busuanzi-value" id="busuanzi_value_site_pv"></span> 次回眸才与你相遇
+   </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '7d36211628f157602917',
+      clientSecret: '3a2c25564dd922bbdf6d73bf1e691fcfcab52d81',
+      repo        : 'Erzhoumu.github.io',
+      owner       : 'Erzhoumu',
+      admin       : ['Erzhoumu'],
+      id          : 'cb4f8e6b6da2764b3c53b42b818c8cb7',
+        language: '',
+      distractionFreeMode: false
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+<script>
+  $(document).ready(function () {
+    $(".header-inner").animate({padding: "25px 0 25px"}, 1000);
+  });
+</script>
+</body>
+</html>
