@@ -1151,7 +1151,7 @@ pre .javascript .function {
 }
 .links-of-author a::before,
 .links-of-author span.exturl::before {
-  background: #137801;
+  background: #332226;
   border-radius: 50%;
   content: ' ';
   display: inline-block;
@@ -2397,11 +2397,28 @@ embed {
   height: 1.5px;
   background-image: linear-gradient(90deg, #f79533 0%, #f37055 15%, #ef4e7b 30%, #a166ab 44%, #5073b8 58%, #1098ad 72%, #07b39b 86%, #6dba82 100%);
 }
+.reading-progress-bar {
+  background-image: linear-gradient(90deg, #f79533 0%, #f37055 15%, #ef4e7b 30%, #a166ab 44%, #5073b8 58%, #1098ad 72%, #07b39b 86%, #6dba82 100%);
+}
 .header {
   line-height: 1.5;
 }
+.header,
+.footer {
+  background-color: #f5f5f5;
+}
 .sidebar {
   box-shadow: none;
+}
+.site-subtitle {
+  color: #6f6d6d;
+  font-size: 1.2em;
+}
+.btn {
+  border: 2px solid #6f7c82;
+  border-radius: 2px;
+  border-color: #6f7c82;
+  background: #6f7c82;
 }
 #sidebar,
 header {
@@ -2428,7 +2445,7 @@ header {
   color: #1890ff;
 }
 .back-to-top .fa-arrow-up:before {
-  color: #ff6769;
+  color: #9939ff;
 }
 a,
 span.exturl {
