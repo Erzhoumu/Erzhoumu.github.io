@@ -158,7 +158,7 @@ body {
   background: #fff;
   color: #555;
   font-family: 'Monda', "PingFang SC", "Microsoft YaHei", sans-serif;
-  font-size: 0.8em;
+  font-size: 0.9em;
   line-height: 2;
 }
 @media (max-width: 991px) {
@@ -1151,7 +1151,7 @@ pre .javascript .function {
 }
 .links-of-author a::before,
 .links-of-author span.exturl::before {
-  background: #b8260f;
+  background: #f1aae5;
   border-radius: 50%;
   content: ' ';
   display: inline-block;
@@ -2445,7 +2445,7 @@ header {
   color: #1890ff;
 }
 .back-to-top .fa-arrow-up:before {
-  color: #ffff93;
+  color: #d5006a;
 }
 a,
 span.exturl {
@@ -2482,4 +2482,8 @@ span.exturl:hover {
 .local-search-popup #local-search-result {
   padding: 25px 40px;
   height: calc(100% - 95px);
+}
+.post-tags a {
+  font-size: 1em;
+  color: #fc6423;
 }
